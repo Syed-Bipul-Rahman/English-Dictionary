@@ -3,6 +3,7 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+
 @Entity(tableName = "dictionary_entries")
 public class DictionaryEntry {
     @PrimaryKey(autoGenerate = true)
@@ -14,13 +15,12 @@ public class DictionaryEntry {
     @ColumnInfo(name = "definition")
     private String definition;
 
-    // Constructor, getters, and setters
-
-    public DictionaryEntry(int id, String word, String definition) {
-        this.id = id;
+    public DictionaryEntry(String word, String definition) {
         this.word = word;
         this.definition = definition;
     }
+
+    // Getters and setters for id, word, and definition
 
     public int getId() {
         return id;

@@ -1,3 +1,5 @@
+package com.roomdb.dictonary;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
@@ -13,6 +15,8 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     private EditText searchEditText;
@@ -31,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
         searchButton = findViewById(R.id.searchButton);
         definitionsLayout = findViewById(R.id.definitionsLayout);
         statusTextView = findViewById(R.id.statusTextView);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.dictionaryapi.dev/api/v2/entries/en/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
         apiService = retrofit.create(DictionaryApiService.class);
 
@@ -70,9 +79,8 @@ public class MainActivity extends AppCompatActivity {
                         // Save the definition to the database
                         DictionaryMeaning firstMeaning = meanings.get(0);
                         String definition = firstMeaning.getDefinitions().get(0).getDefinition();
-                        DictionaryEntry entry = new DictionaryEntry();
-                        entry.setWord(word);
-                        entry.setDefinition(definition);
+                        DictionaryEntry entry = new DictionaryEntry(word, definition);
+
                         dictionaryDao.insertDictionaryEntry(entry);
 
                         displayDefinition(definition);
@@ -90,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     private void displayDefinition(String definition) {
         statusTextView.setVisibility(View.GONE);
