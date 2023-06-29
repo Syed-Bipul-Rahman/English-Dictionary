@@ -1,9 +1,4 @@
-package com.roomdb.dictonary;
-
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
-
 import androidx.room.Room;
 
 import android.os.Bundle;
@@ -20,27 +15,26 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-//variables declarations
-private EditText searchEditText;
+    private EditText searchEditText;
     private Button searchButton;
     private LinearLayout definitionsLayout;
     private TextView statusTextView;
     private DictionaryApiService apiService;
     private DictionaryDao dictionaryDao;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        //initializing variables
         searchEditText = findViewById(R.id.searchEditText);
         searchButton = findViewById(R.id.searchButton);
         definitionsLayout = findViewById(R.id.definitionsLayout);
         statusTextView = findViewById(R.id.statusTextView);
 
         apiService = retrofit.create(DictionaryApiService.class);
-// Create an instance of the Room database
+
+        // Create an instance of the Room database
         dictionaryDao = Room.databaseBuilder(getApplicationContext(), DictionaryDatabase.class, "dictionary-db")
                 .build()
                 .getDictionaryDao();
@@ -108,7 +102,5 @@ private EditText searchEditText;
     private void displayErrorMessage(String message) {
         statusTextView.setText(message);
         statusTextView.setVisibility(View.VISIBLE);
-
-
     }
 }
