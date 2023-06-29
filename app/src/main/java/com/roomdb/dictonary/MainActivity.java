@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         statusTextView = findViewById(R.id.statusTextView);
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.dictionaryapi.dev/api/v2/entries/en/")
+                .baseUrl("https://api.dictionaryapi.dev/api/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -60,43 +60,45 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void searchWord(final String word) {
-        DictionaryEntry entry = dictionaryDao.getDictionaryEntry(word);
-        if (entry != null) {
-            displayDefinition(entry.getDefinition());
-            return;
-        }
-
-        Call<DictionaryResponse> call = apiService.getDefinition(word);
-        call.enqueue(new Callback<DictionaryResponse>() {
-            @Override
-            public void onResponse(Call<DictionaryResponse> call, Response<DictionaryResponse> response) {
-                if (response.isSuccessful()) {
-                    DictionaryResponse dictionaryResponse = response.body();
-
-                    if (dictionaryResponse != null && dictionaryResponse.getMeanings() != null && !dictionaryResponse.getMeanings().isEmpty()) {
-                        List<DictionaryMeaning> meanings = dictionaryResponse.getMeanings();
-
-                        // Save the definition to the database
-                        DictionaryMeaning firstMeaning = meanings.get(0);
-                        String definition = firstMeaning.getDefinitions().get(0).getDefinition();
-                        DictionaryEntry entry = new DictionaryEntry(word, definition);
-
-                        dictionaryDao.insertDictionaryEntry(entry);
-
-                        displayDefinition(definition);
-                    } else {
-                        displayErrorMessage("No definition found for the word.");
-                    }
+        new Thread(() -> {
+            DictionaryEntry entry = dictionaryDao.getDictionaryEntry(word);
+            runOnUiThread(() -> {
+                if (entry != null) {
+                    displayDefinition(entry.getDefinition());
                 } else {
-                    displayErrorMessage("Failed to retrieve definition. Please try again.");
-                }
-            }
+                    Call<DictionaryResponse> call = apiService.getDefinition(word);
+                    call.enqueue(new Callback<DictionaryResponse>() {
+                        @Override
+                        public void onResponse(Call<DictionaryResponse> call, Response<DictionaryResponse> response) {
+                            if (response.isSuccessful()) {
+                                DictionaryResponse dictionaryResponse = response.body();
 
-            @Override
-            public void onFailure(Call<DictionaryResponse> call, Throwable t) {
-                displayErrorMessage("Network request failed. Please check your internet connection.");
-            }
-        });
+                                if (dictionaryResponse != null && dictionaryResponse.getMeanings() != null && !dictionaryResponse.getMeanings().isEmpty()) {
+                                    List<DictionaryMeaning> meanings = dictionaryResponse.getMeanings();
+
+                                    DictionaryMeaning firstMeaning = meanings.get(0);
+                                    String definition = firstMeaning.getDefinitions().get(0).getDefinition();
+
+                                    DictionaryEntry entry = new DictionaryEntry(word, definition);
+                                    dictionaryDao.insertDictionaryEntry(entry);
+
+                                    displayDefinition(definition);
+                                } else {
+                                    displayErrorMessage("No definition found for the word.");
+                                }
+                            } else {
+                                displayErrorMessage("Failed to retrieve definition. Please try again.");
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<DictionaryResponse> call, Throwable t) {
+                            displayErrorMessage("Network request failed. Please check your internet connection.");
+                        }
+                    });
+                }
+            });
+        }).start();
     }
 
 

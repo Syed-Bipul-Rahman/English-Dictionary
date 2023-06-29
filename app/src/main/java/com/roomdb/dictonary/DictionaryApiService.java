@@ -5,6 +5,6 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 
 public interface DictionaryApiService {
-    @GET("api/v2/entries/en/{word}")
+    @GET("v2/entries/en/{word}")
     Call<DictionaryResponse> getDefinition(@Path("word") String word);
 }
